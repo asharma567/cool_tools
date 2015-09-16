@@ -94,8 +94,6 @@ def multicollinearity_check_pairwise(feature_M, threshold=0.8):
     
     return pairwise_correlation
 
-def model_cv_score(model, feat_matrix, labels, folds=10, scoring='roc_auc'):
-    return np.mean(cross_validation.cross_val_score(model, feat_matrix, labels, cv=folds, scoring='roc_auc'))
 
 
 def get_scores(classifier, X_train, X_test, y_train, y_test, **kwargs):
@@ -127,12 +125,21 @@ def get_scores_model(model_obj, X_test, y_test):
            f1_score(y_test, y_predict), \
            roc_auc_score(y_test, y_predict)
 
+def model_cv_score(model, feat_matrix, labels, folds=10, scoring='roc_auc'):
+    '''
+    I: persisted model object, feature matrix (numpy or pandas datafram), labels, k-folds, scoring metric
+    O: mean of scores over each k-fold (float)
+    '''
+    return np.mean(cross_validation.cross_val_score(model, feat_matrix, labels, cv=folds, scoring=scoring))
+
 def get_scores_cross_val(model_obj, feature_M, labels):
+    '''
+    I: persisted model object, feature matrix (numpy or pandas datafram), labels
+    O: 'accuracy', 'precision', 'recall', 'f1', 'roc_auc'
+    '''
     scoring_types = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
-    
     score_stor = [model_cv_score(model_obj, feature_M, labels, scoring=score_type) for score_type in scoring_types]
     
-
     return tuple(score_stor)
 
 def get_model_eval_df(models_dict, X_test, y_test, cv=False):
