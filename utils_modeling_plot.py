@@ -99,7 +99,7 @@ def feature_importance(feature_names, model, top=10):
     feature_importance_series[::-1][:top][::-1].plot(kind='barh')
     
     #remove weird dotted line on axis
-    # ax.lines[0].set_visible(False)
+    ax.lines[0].set_visible(False)
     pass
 
 def plot_cm(y_true, y_pred, labels=['True', 'False'], model_name=None):

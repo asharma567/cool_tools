@@ -1,3 +1,11 @@
+'''
+Have you ever encountered a problem with dynamically assigning 
+properties to an object? 
+
+This is a great way to keep track of those new properties where 
+dict_of_names is a hash-map of property_name : value
+'''
+
 import types
 import inspect
 
@@ -8,20 +16,19 @@ class MyClass(object):
         self.b = 'b'
         self.update_dict()
 
-    # you can also write this as a classmethod or staticmethod to update all instances 
-    # with this variable but from what I understand it might be a one off thing
+    # you can also write this as a classmethod or staticmethod 
+    # to update all instances with this variable 
     def add_property(self, attr_name, attr_val):
         setattr(self, attr_name, types.StringType(attr_val))
         self.update_dict()
         pass
     
     def update_dict(self):
-        attributes = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))
+        attributes = inspect.getmembers(self, lambda a: not(inspect.isroutine(a)))
         current_properties_of_obj = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__') )]
         self.dict_of_names = dict(current_properties_of_obj)
         
-        # very hacky and certainly not best practices 
-        # but why would you want to dict to print twice
+        #hack, need to fix
         self.dict_of_names.pop('dict_of_names', None)
         pass
 

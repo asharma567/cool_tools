@@ -2,11 +2,21 @@ from futures import ThreadPoolExecutor
 import cPickle
 
 
-def multithread_map(work_func, work_list, num_workers):
+def multithread_map(fn, work_list, num_workers):
+    '''
+    spawns a threadpool and assigns num_workers to some 
+    list, array, or any other container. Motivation behind 
+    this was for functions that involve scraping.
+    '''
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
-        return list(executor.map(work_func, work_list))
+        return list(executor.map(fn, work_list))
 
 def memoize(fn):
+    '''
+    memoization for any function i.e. checks a hash-map to 
+    see if the same work's already been done avoid unnecessary 
+    computation
+    '''
     try: 
         with open('memoized_stored_results_' + str(fn).split()[1] + '.pkl', 'rb') as f:
             stored_results = cPickle.load(f)

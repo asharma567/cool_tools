@@ -5,8 +5,7 @@ Dependencies
 * subprocess: pip installable package
 * pandas
 
-This should definitely be written in OOP style. I'll do it at some point in time but 
-I'm shipping the code as is for right now.
+This should definitely be written in OOP style. (pending)
 '''
 
 import pandas as pd

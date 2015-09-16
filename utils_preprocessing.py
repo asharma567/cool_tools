@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from utils_modeling_plot import pprint_df
 
+
 def isfloat(x):
     try:
         a = float(x)
@@ -156,4 +157,3 @@ def throw_away_series(df_feature_matrix, threshold=1000):
     pprint_df(df_count_of_remaining_feature_M)
     
     return df_feature_matrix
-

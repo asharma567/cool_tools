@@ -41,18 +41,11 @@ def ensemble_predict_proba_true(fitted_models_dict, X_test, output_median=False,
         median_vector = map(np_median_obj ,master_array[:])
         ensemble_output = median_vector
     else:
-        #Need to come back to this
-        #Going off of majority vote basically and then taking the probability
         print 'majority'
         ensemble_output = np.array([master_array[i].sum() / master_array.shape[1]  \
                                     for i in xrange(master_array.shape[0])])
 
     return np.array(ensemble_output)
-
-
-def pickle_tuned_models(models_dict, file_name='tuned_models_dict.pkl'):
-    with open(file_name, 'wb') as filename:
-        cPickle.dump(models_dict, filename)
 
 def get_rsquared(y, x):
     '''
@@ -66,7 +59,9 @@ def get_rsquared(y, x):
 
 def VIF(feature_matrix_X):
     ''' 
-    Solution Multicollinearirty
+    Find out which predictors have the highest multicollinearirty 
+    w.r.t the rest of them in the context of composition as oppose 
+    to pairwise_correlation
     '''
     all_rsquared_dict = {}
     predictors = feature_matrix_X.columns.tolist()
@@ -142,7 +137,7 @@ def get_scores_cross_val(model_obj, feature_M, labels):
     
     return tuple(score_stor)
 
-def get_model_eval_df(models_dict, X_test, y_test, cv=False):
+def df_get_model_eval(models_dict, X_test, y_test, cv=False):
     '''
     INPUT: model dict, X_test, y_test
     OUTPUT: model_scores df['accuracy, precision, recall, f1, roc_auc']
