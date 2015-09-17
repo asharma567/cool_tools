@@ -13,10 +13,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def plot_roc(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
+def roc_plot(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
     '''
-    INPUT Feature Matrix, labels, model, hyper-parameter settings
-    OUTPUT None, it plots a ROC of the Cross-Validation set
+    I: Feature Matrix, labels, model, hyper-parameter settings
+    O: None, it plots a ROC of the Cross-Validation set
     '''
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
@@ -53,7 +53,7 @@ def plot_roc(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
     mean_tpr /= len(kf)
     mean_tpr[-1] = 1.0
     mean_auc = auc(mean_fpr, mean_tpr)
-    plt.plot(mean_fpr, mean_tpr, 'k--',label='Mean ROC (area = %0.2f)' % mean_auc, lw=2)
+    plt.plot(mean_fpr, mean_tpr, 'k--', label='Mean ROC (area = %0.2f)' % mean_auc, lw=2)
     
     #plot the holdout
     y_prob_hold_out = clf.predict_proba(X_hold_out)
@@ -66,18 +66,16 @@ def plot_roc(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
     plt.ylim([-0.05, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.suptitle(str(clf))
     plt.title('Receiver operating characteristic')
     plt.legend(loc="lower right")
     
     plt.show()
-
 def feature_importance(feature_names, model, top=10):
     '''
     Plotting top x most important features
     
-    INPUT: Feature Matrix (DataFrame), model, labels (y), top x
-    OUTPUT: Bar plot of most normalized by the most important feature
+    I: Feature Matrix (DataFrame), model, labels (y), top x
+    O: Bar plot of most normalized by the most important feature
     '''
     
     #Grabbing names of the features
@@ -101,7 +99,7 @@ def feature_importance(feature_names, model, top=10):
     #remove weird dotted line on axis
     ax.lines[0].set_visible(False)
     pass
-
+    
 def plot_cm(y_true, y_pred, labels=['True', 'False'], model_name=None):
     '''
     INPUT: , labels (list)

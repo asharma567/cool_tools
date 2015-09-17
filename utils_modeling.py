@@ -126,7 +126,7 @@ def model_cv_score(model, feat_matrix, labels, folds=10, scoring='roc_auc'):
     O: mean of scores over each k-fold (float)
     '''
     return np.mean(cross_validation.cross_val_score(model, feat_matrix, labels, cv=folds, scoring=scoring))
-
+    
 def get_scores_cross_val(model_obj, feature_M, labels):
     '''
     I: persisted model object, feature matrix (numpy or pandas datafram), labels
@@ -134,8 +134,10 @@ def get_scores_cross_val(model_obj, feature_M, labels):
     '''
     scoring_types = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
     score_stor = [model_cv_score(model_obj, feature_M, labels, scoring=score_type) for score_type in scoring_types]
-    
-    return tuple(score_stor)
+    model_name = str(model_obj).split('(')[0]
+    df_output = pd.DataFrame(score_stor, index=scoring_types).T
+    df_output.index = [model_name]
+    return df_output
 
 def df_get_model_eval(models_dict, X_test, y_test, cv=False):
     '''
