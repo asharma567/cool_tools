@@ -79,7 +79,7 @@ def dummy_it(input_df):
     
     # every column that's not a categorical column, we dummytize
     for col in input_df.columns:
-        if input_df[col].dtype == 'float64' or input_df[col].dtype == 'int64':
+        if input_df[col].dtype in ['float64','int64','bool']:
             base_case_df = pd.concat([base_case_df, input_df[col]], axis=1)
         else:
             base_case_df = pd.concat([base_case_df, pd.get_dummies(input_df[col])], axis=1)
@@ -87,12 +87,12 @@ def dummy_it(input_df):
     
     # print out all the categoricals which are being dummytized
     if categorical_variables: 
-        print 'Categorical Variables Detected: '
+        print 'Variables Being Dummytized: '
         print '=' * 10
         print '\n'.join(categorical_variables)
 
     return base_case_df
-
+    
 def throw_away_series(df_feature_matrix, threshold=1000):
     '''
     I: Feature Matrix (Pandas DataFrame), threshold of observations
