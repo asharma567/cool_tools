@@ -70,6 +70,7 @@ def roc_plot(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
     plt.legend(loc="lower right")
     
     plt.show()
+
 def feature_importance(feature_names, model, top=10):
     '''
     Plotting top x most important features
