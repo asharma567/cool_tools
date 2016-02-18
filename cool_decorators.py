@@ -2,7 +2,7 @@ from futures import ThreadPoolExecutor
 import cPickle
 
 
-def multithread_map(fn, work_list, num_workers):
+def multithread_map(fn, work_list, num_workers=50):
     '''
     spawns a threadpool and assigns num_workers to some 
     list, array, or any other container. Motivation behind 
