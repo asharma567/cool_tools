@@ -67,32 +67,44 @@ def join_to_feature(main_dataframe, additional_dataframe, rename_cnt_to_str, key
     main_dataframe = main_dataframe.rename(columns={'cnt':rename_cnt_to_str})
     return main_dataframe
 
-def dummy_it(input_df):
+def dummy_it(input_df, linear_model=False):
     '''
-    I: Pandas DataFrame with categorical features
-    O: Same df with binarized categorical features
-    '''
+        I: Pandas DataFrame with categorical features
+        O: Same df with binarized categorical features
+        '''
     
     # base_case empty DF to append to
-    base_case_df = pd.DataFrame() 
+    base_case_df = pd.DataFrame()
     categorical_variables = []
+    dropped_variables = []
     
     # every column that's not a categorical column, we dummytize
     for col in input_df.columns:
         if input_df[col].dtype in ['float64','int64','bool']:
             base_case_df = pd.concat([base_case_df, input_df[col]], axis=1)
         else:
-            base_case_df = pd.concat([base_case_df, pd.get_dummies(input_df[col])], axis=1)
+            if linear_model:
+                dropped_variables.append(pd.get_dummies(input_df[col]).ix[:, -1].name)
+                #leaves the last one out
+                base_case_df = pd.concat([base_case_df, pd.get_dummies(input_df[col]).ix[:, :-1]], axis=1)
+            else:
+                base_case_df = pd.concat([base_case_df, pd.get_dummies(input_df[col])], axis=1)
             categorical_variables.append(col)
     
     # print out all the categoricals which are being dummytized
-    if categorical_variables: 
+    if categorical_variables:
         print 'Variables Being Dummytized: '
         print '=' * 10
         print '\n'.join(categorical_variables)
 
+    if dropped_variables:
+        print 'Dropped to avoid dummy variable trap: '
+        print '=' * 10
+        print '\n'.join(dropped_variables)
+
     return base_case_df
-    
+
+
 def throw_away_series(df_feature_matrix, threshold=1000):
     '''
     I: Feature Matrix (Pandas DataFrame), threshold of observations
