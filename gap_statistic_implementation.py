@@ -7,14 +7,12 @@ dst = euclidean
 
 k_means_args_dict = {
     'n_clusters': 0,
-    # note the usage of k-means++ 
     # drastically saves convergence time
     'init':'k-means++',
     'max_iter':100,
     'n_init':1,
     'verbose':False,
-    # num_cores on your machine
-    'n_jobs':8
+    # 'n_jobs':8
         }
 
 def gap(data, refs=None, nrefs=20, ks=range(1,11)):
@@ -64,8 +62,9 @@ def gap(data, refs=None, nrefs=20, ks=range(1,11)):
 if __name__ == '__main__':
     
     #Example of usage on a tfidf matrix
-    tfidf_M = joblib.load('../pickles/tfidf_array_small.pkl')
-    args, gap_scores = gap(tfidf_M, ks=range(1,9) 
+    feature_M = joblib.load('../feature_M.pkl')
+    args, gap_scores = gap(feature_M, ks=range(3,10) 
+    
     print args, gap_scores
-    joblib.dump(args, 'args.joblib')
-    joblib.dump(gap_scores, 'gap_scores.joblib')
+    joblib.dump(args, '../args.joblib')
+    joblib.dump(gap_scores, '../gap_scores.joblib')

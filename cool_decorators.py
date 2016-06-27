@@ -2,7 +2,7 @@ from futures import ThreadPoolExecutor
 import cPickle
 
 
-def multithread_map(fn, work_list, num_workers):
+def multithread_map(fn, work_list, num_workers=50):
     '''
     spawns a threadpool and assigns num_workers to some 
     list, array, or any other container. Motivation behind 
@@ -44,3 +44,27 @@ def make_verbose(fn):
         print '%s(%s)' % (fn.__name__, ', '.join(repr(arg) for arg in args))
         return fn(*args)
     return verbose
+
+
+class TimedOutExc(Exception):
+    pass
+
+def deadline(timeout, *args):
+    '''
+    give a deadline to subject function, usage:
+    @deadline(900)
+    function will raise error TimedOutExc after 900 seconds
+    '''
+    def decorate(f):
+        def handler(signum, frame):
+            raise TimedOutExc()
+
+        def new_f(*args):
+            signal.signal(signal.SIGALRM, handler)
+            signal.alarm(timeout)
+            return f(*args)
+            signa.alarm(0)
+
+        new_f.__name__ = f.__name__
+        return new_f
+    return decorate

@@ -9,6 +9,7 @@ from sklearn.metrics import classification_report
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import cPickle
+from sklearn.preprocessing import StandardScaler
 
 
 def ensemble_predict(fitted_models_dict, X_test):
@@ -158,3 +159,23 @@ def df_get_model_eval(models_dict, X_test, y_test, cv=False):
         df_score[k] = df_score[k].apply(lambda x: float("{0:.2f}".format(x)))
     
     return df_score
+
+def scale_feature_matrix(feature_M, linear=False):
+    binary_fields = []
+    for feature_name in feature_M.columns:
+        
+        unique_values_for_features = feature_M[feature_name].value_counts().index
+        #edge case where it won't work is when there's only one value for the dummy
+        #since it's an example with only one value do we even need to worry about it?
+        if len(unique_values_for_features) == 2 and np.all(unique_values_for_features == np.array([0,1])):
+            binary_fields.append(feature_name)
+            print feature_name
+
+    #Scale 0 mean & unit variance
+    scaler_obj = StandardScaler()
+    
+    X_scaled = scaler_obj.fit_transform(feature_M.drop(binary_fields, axis=1))
+    X_scaled_w_cats = np.c_[X_scaled, feature_M[binary_fields].as_matrix()]
+    
+    return X_scaled_w_cats, scaler_obj
+
