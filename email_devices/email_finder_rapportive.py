@@ -126,4 +126,57 @@ def email_checker(first_name, last_name, domain):
     return output
 
 if __name__ == '__main__':
-	print sorted(email_checker('ryan', 'masiello', 'viewthespace.com'), key=lambda x:bool(x[1]))
+	
+	    # ('joe','choti', 'mlb.com'),
+	    # ('laura', 'kang', 'sendence.com'),
+	   	# ('rasmus', "wissmann",  'oscarhealth.com'),
+	    # ('paolo', 'esquivel', 'truveris.com'),
+	    # ('carl', 'anderson', 'wework.com'),
+	    # ('carl', 'vogel', 'warbyparker.com'),
+	    # ('max', 'shron', 'warbyparker.com'),
+
+	# some_list = [
+	#     ('Debbie', 'Chung', 'gilt.com'),
+	#     ('Igor', 'Elbert', 'gilt.com'),
+	#     ('asharma','567567', 'gmail.com'),
+	#     ('claudia', 'perlich', 'dstillery.com'),
+	#     ('brian', 'dalessandro', 'zocdoc.com'),
+	#     ('jeffrey', 'picard', 'contently.com'),
+	# ]
+	str_lis = '''
+		brian dalessandro zocdoc.com
+		Dan Becker datarobot.com
+		Satadru Sengupta datarobot.com
+		xavier datarobot.com
+		Srikesh Arunajadai  Celmatix.com
+		Bob Sohval  securityscorecard.io
+		ppoh securityscorecard.io
+		Richard L Williams makerbot.com
+		Russell Kummer makerbot.com
+		Alexandra Marvar makerbot.com
+		Jack Thompson makerbot.com
+		Jonathan Taqqu intentmedia.com
+		careers sendence.com
+		Laura sendence.com
+	'''
+	'''
+	brian@zocdoc.com
+	'''
+	some_list = [tuple(item.strip('\t').split()) for item in str_lis.split('\n') if item != '']
+
+	for args in some_list:
+		bag = []
+		
+		for email in email_checker(*args):
+			try:
+				if email[1]: bag.append(email_checker(*args))
+			except: 
+				print email
+		
+		
+		
+	if bag:
+		print '\n'.join(map(str,bag[::-1]))
+	else:
+		print None
+
