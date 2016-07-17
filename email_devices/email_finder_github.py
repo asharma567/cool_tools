@@ -64,4 +64,4 @@ def main():
 if __name__ == "__main__":
     main()
     #'github.com/bmcmenamin/tensorFlowFaces'
-    'github.com/emilyhoughkovacs/humanitarian_unrest_classifier'
+    'https://github.com/mshron/deeptweeting'

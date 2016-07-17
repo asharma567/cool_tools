@@ -7,6 +7,7 @@ curl_profile_URL = '''
 curl 'https://api.linkedin.com/v1/people/email={0}%40{1}:(first-name,last-name,headline,location,distance,positions,twitter-accounts,im-accounts,phone-numbers,member-url-resources,picture-urls::(original),site-standard-profile-request,public-profile-url,relation-to-viewer:(connections:(person:(first-name,last-name,headline,site-standard-profile-request,picture-urls::(original)))))' -H 'Cookie: bcookie="v=2&5119d04a-4d67-4d0f-8348-ac41c6529628"; sdsc=1%3A1SZM1shxDNbLt36wZwCgPgvN58iw%3D; _lipt=0_eXhgZe72hwJ1ACrCXPhsS-BdeFMrt54s5y8J_u6z8dzUxuf2h_YiYxmpomBbH-j5GxlEiquAYXl0GjOOBEqM3Bq_3Hi3HdpKqdeiuqMHz5h6CewjOlqYL9Qv3ejiVksrfRO1HnNsQ3vR_o0bKyts22tnnJkCZz7v1wGBmMVZmMpM7qwcXNsxZ3IMdxGqtFCJeNmC4SJGjzpxiWYPVGcE5dHsrhvqegaMtZ2s9dxg7gampby-4WXXuawXOcEJpJPmHD3yihk2-Snwob0GYdK1jMhQwJLxcE7WABN-Z_0z5MVzDSWNj5DScvLw1apCBPghb-ERr7LgtKmUV7ZUYMRhsXXpNcFXKU2FZzvIrRktts-; _ga=GA1.2.785583338.1465937479; lang="v=2&lang=en-us&c="; liap=true; lidc="b=LB89:g=357:u=181:i=1466635831:t=1466715123:s=AQH5lo0WCPxkRJs4xxddhuYc__WN3Xh4"' -H 'X-Cross-Domain-Origin: https://mail.google.com' -H 'Accept-Encoding: gzip, deflate, sdch, br' -H 'Accept-Language: en-US,en;q=0.8' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36' -H 'Content-type: application/json' -H 'Accept: */*' -H 'Referer: https://api.linkedin.com/uas/js/xdrpc.html?v=0.0.1191-RC8.56523-1429' -H 'X-Requested-With: IN.XDCall' -H 'x-li-format: json' -H 'Connection: keep-alive' -H 'oauth_token: {2}' -H 'X-HTTP-Method-Override: GET' --compressed
 '''
 
+
 string_formats = '''
 	{first_name}@{domain}
 	{last_name}@{domain}
@@ -95,9 +96,17 @@ def get_profile_from_LI(user_handle, domain, auth_token):
 def check_LI_profile_exist(user_handle, domain, auth_token):
     #hacky ass way to this
     output_str = get_profile_from_LI(user_handle,domain, auth_token)
+   
     #put an if clause and parse out the messsage. 
     #it's the token call this same function again.
-    return  ('''"message": "Couldn\'t find member''' not in output_str[0])
+    # print output_str[0], type(output_str[0]), ("errorCode" not in output_str[0])
+
+    some_output_string = output_str[0]
+    
+    if '''"errorCode": 0,''' in some_output_string: 
+    	raise exception('auth error')
+
+    return  ('''"errorCode"''' not in some_output_string)
 
 #I, O first name, last name, domain
 def permuter(first_name, last_name, domain):
@@ -116,6 +125,8 @@ def permuter(first_name, last_name, domain):
 def email_checker(first_name, last_name, domain):
     # it's not very fast so lets multithread
     auth_token = get_auth_token(curl_auth_URL)
+    # print auth_token
+    #auth_token = "CwvLIj55Ne3EZw9HTE6SX7fKv2g5mnfdYnnL"
     list_of_emails = permuter(first_name, last_name, domain)
 
     output = []    
@@ -143,40 +154,57 @@ if __name__ == '__main__':
 	#     ('brian', 'dalessandro', 'zocdoc.com'),
 	#     ('jeffrey', 'picard', 'contently.com'),
 	# ]
-	str_lis = '''
-		brian dalessandro zocdoc.com
-		Dan Becker datarobot.com
-		Satadru Sengupta datarobot.com
-		xavier datarobot.com
-		Srikesh Arunajadai  Celmatix.com
-		Bob Sohval  securityscorecard.io
-		ppoh securityscorecard.io
-		Richard L Williams makerbot.com
-		Russell Kummer makerbot.com
-		Alexandra Marvar makerbot.com
-		Jack Thompson makerbot.com
-		Jonathan Taqqu intentmedia.com
-		careers sendence.com
-		Laura sendence.com
-	'''
+
+	# str_lis = '''
+	# 	Eric Xu Outbrain.com
+	# 	Samer Zaben Vimeo.com
+	# 	Steve Wood Squarespace.com
+	# 	Brad Willard Squarespace.com
+	# 	David Llanos Gallup.com
+	# 	Anuradha Uduwage Gallup.com
+	# 	Peter Edwards Zillow.com
+	# 	John Wiley Zillow.com
+	# 	Shawn LeMone ASCAP.com
+	# 	Mark Katz ASCAP.com
+	# 	Sarah Bloomquist ASCAP.com
+	# 	David Frigeri ASCAP.com
+	# 	Alex Kass digitalocean.com
+	# 	Courtney Epstein zocdoc.com
+	# 	brian dalessandro zocdoc.com
+	# 	Dan Becker datarobot.com
+	# 	Satadru Sengupta datarobot.com
+	# 	xavier datarobot.com
+	# 	Srikesh Arunajadai  Celmatix.com
+	# 	Bob Sohval  securityscorecard.io
+	# 	ppoh securityscorecard.io
+	# 	Richard Williams makerbot.com
+	# 	Russell Kummer makerbot.com
+	# 	Alexandra Marvar makerbot.com
+	# 	Jack Thompson makerbot.com
+	# 	Jonathan Taqqu intentmedia.com
+	# 	careers sendence.com
+	# 	Laura sendence.com
+	# '''
+	
 	'''
 	brian@zocdoc.com
+	EXu@Outbrain.com
 	'''
+	str_lis = '''
+	a sharma567567 gmail.com
+	max shron warbyparker.com
+	'''
+
 	some_list = [tuple(item.strip('\t').split()) for item in str_lis.split('\n') if item != '']
 
 	for args in some_list:
-		bag = []
-		
-		for email in email_checker(*args):
-			try:
-				if email[1]: bag.append(email_checker(*args))
-			except: 
-				print email
-		
-		
-		
-	if bag:
-		print '\n'.join(map(str,bag[::-1]))
-	else:
-		print None
+		try:
+			filtered_for_positives = [email for email in email_checker(*args) if email[1]]
+			
+			if filtered_for_positives:
+				print '\n'.join(map(str,filtered_for_positives[::-1]))
+			else:
+				print None
 
+		except:
+			print args
