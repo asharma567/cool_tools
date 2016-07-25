@@ -227,3 +227,34 @@ def plot_optimal_number_of_components_variance(scale_feature_collinear_feature_M
     plt.show()
     
     return target_component
+
+def plot_transformation(data, name_of_transformation):
+    '''
+    I: some feature in a training set(pd.Series), name for a label
+    O: None, just plots the value_counts and includes the labels Skew, Mean, Std
+
+    refer to this for actual use: 
+    https://github.com/asharma567/multiclass_with_major_class_imbalance/blob/master/analysis.ipynb
+    '''
+    #setting up canvas
+    figure = plt.figure(figsize=(10,5))
+    plt.suptitle(name_of_transformation)
+    figure.add_subplot(121)
+    plt.hist(data, alpha=0.75) 
+    distribution_stats_text_label(-2, 1500, data)
+
+    figure.add_subplot(122)
+    plt.boxplot(data)
+
+    plt.show()
+
+def distribution_stats_text_label(position_x, position_y, data):
+    '''
+    you'll have to play around with the label placement 
+    but I try to make some effort to automate this
+    '''
+    label_position_decrement = 0.08 * position_y
+    plt.text(position_x, position_y, "Skewness: {0:.2f}".format(skew(data))) 
+    plt.text(position_x, position_y - label_position_decrement, "Mean: {0:.2f}".format(data.mean())) 
+    plt.text(position_x, position_y - 2 * label_position_decrement, "Std: {0:.2f}".format(data.std())) 
+    return None
