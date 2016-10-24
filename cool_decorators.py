@@ -1,8 +1,5 @@
-from futures import ThreadPoolExecutor
-import cPickle
-
-
 def multithread_map(fn, work_list, num_workers=50):
+    from futures import ThreadPoolExecutor
     '''
     spawns a threadpool and assigns num_workers to some 
     list, array, or any other container. Motivation behind 
@@ -12,6 +9,7 @@ def multithread_map(fn, work_list, num_workers=50):
         return list(executor.map(fn, work_list))
 
 def memoize(fn):
+    import cPickle
     '''
     memoization for any function i.e. checks a hash-map to 
     see if the same work's already been done avoid unnecessary 

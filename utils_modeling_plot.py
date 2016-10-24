@@ -72,6 +72,8 @@ def roc_plot(X, y, X_hold_out, y_hold_out, clf_class, **kwargs):
     plt.show()
 
 def feature_importance(feature_names, model, top=10):
+    import pandas as pd
+    import matplotlib.pyplot as plt
     '''
     Plotting top x most important features
     
@@ -96,11 +98,23 @@ def feature_importance(feature_names, model, top=10):
     
     plt.title(model_name)
     feature_importance_series[::-1][:top][::-1].plot(kind='barh')
+    return feature_importance_series[::-1][:top][::-1].index
+
+def plot_feature_imp_random_stumps(feature_M, labels, feature_names):
+    import numpy as np
+    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+    import pandas as pd
     
-    #remove weird dotted line on axis
-    ax.lines[0].set_visible(False)
-    pass
-    
+    rf = RandomForestRegressor(n_estimators=1000, max_depth=2)
+    rf.fit(feature_M, labels)
+
+    std = np.std([tree.feature_importances_ for tree in rf.estimators_], axis=0)
+    most_important_feat = pd.Series([tree.feature_importances_.argmax() for tree in rf.estimators_]).value_counts()
+    most_important_feat.index = [feature_names[idx] for idx in most_important_feat.index]
+    most_important_feat.plot(kind='bar')
+
+    return most_important_feat.index
+
 def plot_cm(y_true, y_pred, labels=['True', 'False'], model_name=None):
     '''
     INPUT: , labels (list)

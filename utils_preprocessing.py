@@ -69,9 +69,11 @@ def join_to_feature(main_dataframe, additional_dataframe, rename_cnt_to_str, key
 
 def dummy_it(input_df, linear_model=False):
     '''
-        I: Pandas DataFrame with categorical features
-        O: Same df with binarized categorical features
-        '''
+    I: Pandas DataFrame with categorical features
+    O: Same df with binarized categorical features
+
+    *check the dummy variable trap thing
+    '''
     
     # base_case empty DF to append to
     base_case_df = pd.DataFrame()
@@ -80,7 +82,7 @@ def dummy_it(input_df, linear_model=False):
     
     # every column that's not a categorical column, we dummytize
     for col in input_df.columns:
-        if input_df[col].dtype in ['float64','int64','bool']:
+        if str(input_df[col].dtype) != 'object':
             base_case_df = pd.concat([base_case_df, input_df[col]], axis=1)
         else:
             if linear_model:
@@ -103,7 +105,6 @@ def dummy_it(input_df, linear_model=False):
         print '\n'.join(dropped_variables)
 
     return base_case_df
-
 
 def throw_away_series(df_feature_matrix, threshold=1000):
     '''
@@ -169,3 +170,38 @@ def throw_away_series(df_feature_matrix, threshold=1000):
     pprint_df(df_count_of_remaining_feature_M)
     
     return df_feature_matrix
+
+def scale_feature_matrix(feature_M, linear=False, outliers=False):
+    from sklearn.preprocessing import StandardScaler, RobustScaler
+    import numpy as np
+    
+    binary_fields = [col for col in feature_M.columns if len(set(feature_M[col])) == 2]
+            
+    if outliers:
+        #Scaling 0 median & unit variance
+        scaler_obj = RobustScaler()
+        print 'centering around median'
+
+    else:
+        #Scale 0 mean & unit variance
+        scaler_obj = StandardScaler()
+        print 'centering around mean'
+    
+    print 'found these binaries'
+    print '-' * 10
+    print '\n'.join(binary_fields)
+
+        
+    X_scaled = scaler_obj.fit_transform(feature_M.drop(binary_fields, axis=1))
+    X_scaled_w_cats = np.c_[X_scaled, feature_M[binary_fields].as_matrix()]
+    
+    return X_scaled_w_cats, scaler_obj
+
+def missing_values_finder(df):
+    '''
+    finds missing values in a data frame returns to you the value counts
+    '''
+    import pandas as pd
+    missing_vals_dict= {col : df[col].dropna().shape[0] / float(df[col].shape[0]) for col in df.columns}
+    output_df = pd.DataFrame().from_dict(missing_vals_dict, orient='index').sort_index()
+    return output_df

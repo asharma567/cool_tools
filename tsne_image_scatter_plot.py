@@ -33,7 +33,12 @@ def image_scatter_plot(feature_M, images, res=500, cval=1., perp=30, tsne_initia
     max_width = images[0].shape[0]
     max_height = images[0].shape[1]
     
-    tsne_scatter_plot = TSNE(init=tsne_initialization,n_components=2, verbose=2, perplexity=perp).fit_transform(feature_M)
+    tsne_scatter_plot = TSNE(
+            init=tsne_initialization,
+            n_components=2, 
+            verbose=2, 
+            perplexity=perp
+            ).fit_transform(feature_M)
 
     xx = tsne_scatter_plot[:, 0]
     yy = tsne_scatter_plot[:, 1]
