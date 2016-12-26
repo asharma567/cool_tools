@@ -2,11 +2,12 @@ from sklearn.manifold import TSNE
 from sklearn import datasets
 import matplotlib.pyplot as plt
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
 
 '''
-todos
+todo
 ----
-- use multithread so that each perplexity setting could optimized on a single thread
+- use class structure and replace the global variable feature_M
 '''
 
 grid_search_params = {
@@ -27,10 +28,21 @@ grid_search_params = {
     'early_exaggeration': [2.0, 4.0, 6.0],
     
     #this actually affects the inputs to the cost-function
-    'perplexity': range(5,50,10),   
+    'perplexity': [10, 35, 50]
 }
 
-def greedily_search_for_lowest_KL(perplexity_param, feature_M):
+def multithread_map(fn, work_list, num_workers=50):
+    
+    '''
+    spawns a threadpool and assigns num_workers to some 
+    list, array, or any other container. Motivation behind 
+    this was for functions that involve scraping.
+    '''
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        return list(executor.map(fn, work_list))
+
+
+def greedily_search_for_lowest_KL(perplexity_param):
     best_kl_error = None
     best_params = None
     current_params = {}
@@ -55,8 +67,6 @@ def greedily_search_for_lowest_KL(perplexity_param, feature_M):
                     #fit tsne and return the embeddings & kl error
                     fitted_tsne = TSNE(**current_params).fit(feature_M)
                     embeddings, curr_error = fitted_tsne.embedding_, fitted_tsne.kl_divergence_
-                    print curr_error
-            
                     #greedy search tool
                     if not best_kl_error or best_kl_error > curr_error:
                         best_kl_error = curr_error
@@ -65,29 +75,32 @@ def greedily_search_for_lowest_KL(perplexity_param, feature_M):
                     
     return best_params, best_embeddings, best_kl_error
 
-def find_best_tsne_plot(feature_M, verbose=None):
+def find_best_tsne_plot(feature_M_input, verbose=None):
     
     '''
     For every perplexity level we should optimize for the hyperparameters 
     for the lowest KL-Divergence
     '''
     
-    #use multithreading to speed-up
-    for perp in grid_search_params['perplexity']:
-        print perp
-        
-        #find 
-        best_params, embeddings, error = greedily_search_for_lowest_KL(perp, feature_M)
-        
-        #print plot for every configuration
-        print best_params, perp, error
-        plt.scatter(embeddings[:,0], embeddings[:,1], alpha=.2, color='red')
-        plt.show()
+    #this global was added because the way the multithreading function was designed
+    global feature_M
+    feature_M = feature_M_input
+    # print multithread_map(greedily_search_for_lowest_KL, grid_search_params['perplexity'])
+    stor_of_output={}
+    outputs_from_threads =  multithread_map(greedily_search_for_lowest_KL, grid_search_params['perplexity'])
+    for best_params, embeddings, error in outputs_from_threads: 
+        stor_of_output['perp_' + str(best_params['perplexity'])] = best_params, embeddings, error
     
-    return best_params, embeddings
-
+    return  stor_of_output
 
 if __name__ == '__main__':
     s_curve, classes = datasets.make_s_curve(n_samples=300, noise=0.0)
-    best_params, best_plot = find_best_tsne_plot(s_curve, verbose=True)
-    print best_params
+    
+    dics = find_best_tsne_plot(s_curve, verbose=True)
+    for perp, vals in dics.items():
+        
+        #print plot for every configuration
+        best_params, embeddings, error = vals
+        print best_params, perp, error
+        plt.scatter(embeddings[:,0], embeddings[:,1], alpha=.2, color='red')
+        plt.show()
