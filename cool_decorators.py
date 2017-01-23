@@ -1,5 +1,5 @@
 def multithread_map(fn, work_list, num_workers=50):
-    from futures import ThreadPoolExecutor
+    from concurrent.futures import ThreadPoolExecutor
     '''
     spawns a threadpool and assigns num_workers to some 
     list, array, or any other container. Motivation behind 
