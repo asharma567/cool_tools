@@ -31,6 +31,32 @@ def memoize(fn):
         return result
     return memoized
 
+#have no idea if this has been tested
+def memoize(fn):
+    import joblib
+    '''
+    memoization for any function i.e. checks a hash-map to 
+    see if the same work's already been done avoid unnecessary 
+    computation
+    '''
+    try: 
+        file_name_str = 'memoized_stored_results_' + str(fn).split()[1] + '.pkl' 
+        stored_results = joblib.load(file_name_str)
+    except EOFError:
+        stored_results = {}
+        
+    def memoized(*args):
+        if args in stored_results:
+            result = stored_results[args]
+        else:
+            result = stored_results[args] = fn(*args)
+            file_name_str = 'memoized_stored_results_' + str(fn).split()[1] + '.pkl'
+            joblib.dump(stored_results, file_name_str)
+        return result
+    return memoized
+
+
+
 def make_verbose(fn):
     '''
     used for debugging purposes 

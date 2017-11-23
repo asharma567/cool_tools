@@ -205,3 +205,52 @@ def missing_values_finder(df):
     missing_vals_dict= {col : df[col].dropna().shape[0] / float(df[col].shape[0]) for col in df.columns}
     output_df = pd.DataFrame().from_dict(missing_vals_dict, orient='index').sort_index()
     return output_df
+
+def find_field_in_db(potential_field_name, connection_to_db):
+    from sqlalchemy import create_engine
+    
+    qry = '''
+    show tables
+    '''
+
+    df = pd.read_sql(qry, connection_to_db)
+
+
+    all_tables_in_db = list(df.ix[:,0])
+
+    stor =[]
+    for name in all_tables_in_db:
+        try:
+            qry = '''DESCRIBE ''' + name
+
+            df = pd.read_sql(qry, connection_to_db)
+            if potential_field_name in list(df['Field']): stor.append(name)
+        except:
+            print ('error',name)
+    return stor
+
+def find_table(sub_str_in_table_name, connection_to_db):
+    table_names = pd.read_sql("show tables;", connection_to_db)
+
+    return [name for name in table_names.Tables_in_rocketrip_production if sub_str_in_table_name in name]
+
+def connect_to_prod():
+    engine_prod = create_engine('mysql+pymysql://analytician:crouchingtigerhiddenmouse@production-vpc-enc-readonly.cvhe9o57xgm1.us-east-1.rds.amazonaws.com/rocketrip_production', echo=False)
+    return engine_prod.connect()
+
+def connect_to_expenses():
+    engine_exp = create_engine('mysql+pymysql://expense_ro:iwillexpensethelaborcost@expenses-vpc-enc.cvhe9o57xgm1.us-east-1.rds.amazonaws.com/rocketrip_expenses', echo=False)
+    return engine_exp.connect()
+
+def numpy_array_to_str(arr): 
+    '''
+    numpy array
+    - replaces brackets with () and 
+    - replaces spaces with commas
+    - removes newline char
+    
+    used to be inserted into a sql query
+    '''
+    #convert numpy array to list
+    arr_list = list(arr)
+    return '(' + str(arr_list).strip('[]').replace('\n','') + ')'

@@ -175,15 +175,7 @@ def plot_feature_imp_random_stumps(feature_M, labels, feature_names):
 
     return most_important_feat.index
 
-#prod model testing
-def _filter_everything_by_threshold(df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea, threshold=0.5):
-    
-    print('applying threshold-- ', threshold)
 
-    df_matches_scored_and_validated_from_bea = df_matches_scored_and_validated_from_bea[df_matches_scored_and_validated_from_bea['scores'] >= threshold]
-    
-    df_budget_itemization_pairs_which_dont_exist_on_bea = df_budget_itemization_pairs_which_dont_exist_on_bea[df_budget_itemization_pairs_which_dont_exist_on_bea['scores'] >= threshold]
-    return df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea
 
 def plot_coverage_precision(df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea):
     '''
@@ -217,6 +209,39 @@ def plot_coverage_precision(df_matches_scored_and_validated_from_bea, df_budget_
     df['coverage'].plot(label='coverage')
     return df
 
+def print_scores(df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea, threshold=0.5):
+    '''
+    df_matches_scored_and_validated_from_bea are budget-itemization pairs scored to be a match under a given threshold same 
+    for df_budget_itemization_pairs_which_dont_exist_on_bea. However, both are validated by checking membership on the bea table, 
+    not always the corresponding budget is returned.
+    '''
+
+    df_matches_scored_and_validated_from_bea_trimmed, df_budget_itemization_pairs_which_dont_exist_on_bea_trimmed = \
+        _filter_everything_by_threshold(
+            df_matches_scored_and_validated_from_bea, 
+            df_budget_itemization_pairs_which_dont_exist_on_bea, 
+            threshold
+        )
+    
+    stats = _compute_performance_metrics(
+                df_matches_scored_and_validated_from_bea_trimmed, 
+                df_budget_itemization_pairs_which_dont_exist_on_bea_trimmed,
+                df_matches_scored_and_validated_from_bea
+            )
+    
+    _print_performance_metrics(*stats)
+    
+    return None                                                                                    
+
+def _filter_everything_by_threshold(df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea, threshold=0.5):
+    
+    print('applying threshold-- ', threshold)
+
+    df_matches_scored_and_validated_from_bea = df_matches_scored_and_validated_from_bea[df_matches_scored_and_validated_from_bea['scores'] >= threshold]
+    
+    df_budget_itemization_pairs_which_dont_exist_on_bea = df_budget_itemization_pairs_which_dont_exist_on_bea[df_budget_itemization_pairs_which_dont_exist_on_bea['scores'] >= threshold]
+    return df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea
+
 def _print_performance_metrics(
             length_of_truths, 
             length_of_falses_not_on_bea, 
@@ -245,29 +270,6 @@ def _print_performance_metrics(
     return None
 
 
-def print_scores(df_matches_scored_and_validated_from_bea, df_budget_itemization_pairs_which_dont_exist_on_bea, threshold=0.5):
-    '''
-    df_matches_scored_and_validated_from_bea are budget-itemization pairs scored to be a match under a given threshold same 
-    for df_budget_itemization_pairs_which_dont_exist_on_bea. However, both are validated by checking membership on the bea table, 
-    not always the corresponding budget is returned.
-    '''
-
-    df_matches_scored_and_validated_from_bea_trimmed, df_budget_itemization_pairs_which_dont_exist_on_bea_trimmed = \
-        _filter_everything_by_threshold(
-            df_matches_scored_and_validated_from_bea, 
-            df_budget_itemization_pairs_which_dont_exist_on_bea, 
-            threshold
-        )
-    
-    stats = _compute_performance_metrics(
-                df_matches_scored_and_validated_from_bea_trimmed, 
-                df_budget_itemization_pairs_which_dont_exist_on_bea_trimmed,
-                df_matches_scored_and_validated_from_bea
-            )
-    
-    _print_performance_metrics(*stats)
-    
-    return None                                                                                    
 
 #have no idea if this has been tested
 def memoize(fn):
@@ -294,9 +296,9 @@ def memoize(fn):
     return memoized
 
 
-from sqlalchemy import create_engine
 
 def find_field_in_db(potential_field_name, connection_to_db):
+    from sqlalchemy import create_engine
     
     qry = '''
     show tables
@@ -318,6 +320,11 @@ def find_field_in_db(potential_field_name, connection_to_db):
             print ('error',name)
     return stor
 
+def find_table(sub_str_in_table_name, connection_to_db):
+    table_names = pd.read_sql("show tables;", connection_to_db)
+
+    return [name for name in table_names.Tables_in_rocketrip_production if sub_str_in_table_name in name]
+
 def connect_to_prod():
     engine_prod = create_engine('mysql+pymysql://analytician:crouchingtigerhiddenmouse@production-vpc-enc-readonly.cvhe9o57xgm1.us-east-1.rds.amazonaws.com/rocketrip_production', echo=False)
     return engine_prod.connect()
@@ -326,10 +333,6 @@ def connect_to_expenses():
     engine_exp = create_engine('mysql+pymysql://expense_ro:iwillexpensethelaborcost@expenses-vpc-enc.cvhe9o57xgm1.us-east-1.rds.amazonaws.com/rocketrip_expenses', echo=False)
     return engine_exp.connect()
 
-def find_table(sub_str_in_table_name, connection_to_db):
-    table_names = pd.read_sql("show tables;", connection_to_db)
-
-    return [name for name in table_names.Tables_in_rocketrip_production if sub_str_in_table_name in name]
 
 def connect_to_prod():
     engine_prod = create_engine('mysql+pymysql://analytician:crouchingtigerhiddenmouse@production-vpc-enc-readonly.cvhe9o57xgm1.us-east-1.rds.amazonaws.com/rocketrip_production', echo=False)
@@ -355,19 +358,6 @@ def numpy_array_to_str(arr):
 
 
 
-ABREVIATIONS_DICT = {
-    "'m":' am',
-    "'ve":' have',
-    "'ll":" will",
-    "'d":" would",
-    "'s":" is",
-    "'re":" are",
-    "  ":" ",
-    "' s": " is",
-    
-    #debatable between and/or
-    "/":" and "
-}
 
 STOPWORDS_SET = set(stopwords.words('english'))
 SNOWBALL = SnowballStemmer('english')
@@ -383,7 +373,20 @@ def find_stop_words(corpus):
     return pd.Series(unpacked_list).value_counts()
 
 
-#I question the need for this but lets just do it for now
+ABREVIATIONS_DICT = {
+    "'m":' am',
+    "'ve":' have',
+    "'ll":" will",
+    "'d":" would",
+    "'s":" is",
+    "'re":" are",
+    "  ":" ",
+    "' s": " is",
+    
+    #debatable between and/or
+    "/":" and "
+}
+
 def _multiple_replace(text, adict=ABREVIATIONS_DICT):
     import re
     '''
@@ -396,8 +399,6 @@ def _multiple_replace(text, adict=ABREVIATIONS_DICT):
 
 def _special_char_translation(doc):    
     return ' '.join([unidecode(word) for word in doc.split()])
-
-
     
 def _remove_stop_words(doc):
     return ' '.join([word for word in doc.split() if word.lower() not in STOPWORDS_SET])
@@ -501,11 +502,11 @@ def generate_negative_labels(
         
     return df_empty
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import CountVectorizer
-import numpy as np
 
 def str_to_countidf_array(input_str, corpus):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer
+    import numpy as np
     '''
     This is a modification to tfidf. It maintains the scarcity weighting of IDF: log(N/df) but it yields 
     a wordcount not relative to the document size. So if there's a search: 'some word' the size of the 
@@ -872,6 +873,7 @@ def plot_stacked_bar(df_to_plot, label, color_map = 'YlOrBr'):
     INPUT: DF, label(string) for the x-axis to be displayed at the top
     OUTPUT: Stacked Bar Chart
     '''
+    
     # create a figure of given size
     fig = plt.figure(figsize=(15,15))
 
@@ -901,15 +903,15 @@ def plot_stacked_bar(df_to_plot, label, color_map = 'YlOrBr'):
 
     # using the actual data to plot
     df_to_plot[::-1].plot(
-    ax=ax, 
-    kind='barh', 
-    alpha=a, 
-    edgecolor='w',
-    fontsize=12, 
-    grid=True, 
-    width=.8, 
-    stacked=True,
-    cmap=get_cmap(color_map)
+        ax=ax, 
+        kind='barh', 
+        alpha=a, 
+        edgecolor='w',
+        fontsize=12, 
+        grid=True, 
+        width=.8, 
+        stacked=True,
+        cmap=get_cmap(color_map)
     )
 
 
@@ -923,19 +925,50 @@ def plot_stacked_bar(df_to_plot, label, color_map = 'YlOrBr'):
     plt.tight_layout()
     plt.show()
     ;
+
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-COLOR_PALETTE = [    
-   "#348ABD",
-   "#A60628",
-   "#7A68A6",
-   "#467821",
-   "#CF4457",
-   "#188487",
-   "#E24A33"
-  ]
+def find_and_plot_converters(cohort, super_set):
+    
+    for emp_id in cohort:
+        all_of_subject_employees_travel = super_set[super_set.employee_id.isin([emp_id])]
+        time_series = all_of_subject_employees_travel.pct_savings
+        time_series.index = pd.to_datetime(all_of_subject_employees_travel.approved_at)    
+
+        if count_number_of_sign_changes(time_series) > 2.0: 
+            continue
+        
+        time_series.plot(figsize=(15,15), label=str(emp_id))
+        
+        plt.legend()
+
+def transform_to_signal_list(series_of_points, func, window_size = 20):
+
+    outlier_s = series_of_points
+    median_filtered_signal = []
+
+    for ii in range(0, len(series_of_points), window_size):
+        median_filtered_signal += func(np.asanyarray(outlier_s[ii: ii+20])).tolist() 
+    return median_filtered_signal
+
+def plot_time_series_in_context_sequence_lollipop(median_filtered_signal, title_str='Median Filtered Signal'):
+    plt.figure(figsize=(15, 10))
+    plt.subplot(2,1,1)
+    values = np.array(median_filtered_signal)
+    (markers, stemlines, baseline) = plt.stem(values, basefmt='r--', base)
+    useless_output = plt.setp(stemlines, linestyle="-", color="olive", linewidth=0.5, alpha=0.7)
+    plt.title(title_str)
+
+def plot_rolling_avg(subject_cohort, data, func=get_median_filtered, label_str='median'):
+    
+    mean_filtered_signal = transform_to_signal_list(subject_cohort.pct_savings.tolist(), func)
+    
+    ts = pd.Series(mean_filtered_signal)
+    ts.index = pd.to_datetime(subject_cohort.approved_at)
+    ts.plot(figsize=(15,15), label=label_str, linewidth=5)
 
 def get_median_filtered(signal, threshold = 3):
     """
@@ -961,19 +994,10 @@ def get_mean_filtered(signal, threshold = 3):
     signal[mask] = np.mean(signal)
     return signal
 
-def transform_to_signal_list(series_of_points, func, window_size = 20):
-
-    outlier_s = series_of_points
-    median_filtered_signal = []
-
-    for ii in range(0, len(series_of_points), window_size):
-        median_filtered_signal += func(np.asanyarray(outlier_s[ii: ii+20])).tolist() 
-    return median_filtered_signal
-
 def detect_sign_change(x,y):    
     return (x * y) < 0.0
 
-def count_number_of_inflections(time_series):
+def count_number_of_sign_changes(time_series):
     ct_of_inflections = 0 
     for idx in range(1, time_series.shape[0]):
         trailing_idx = idx - 1 
@@ -983,19 +1007,6 @@ def count_number_of_inflections(time_series):
 
     return ct_of_inflections
 
-def find_and_plot_converters(cohort, super_set):
-    
-    for emp_id in cohort:
-        all_of_subject_employees_travel = super_set[super_set.employee_id.isin([emp_id])]
-        time_series = all_of_subject_employees_travel.pct_savings
-        time_series.index = pd.to_datetime(all_of_subject_employees_travel.approved_at)    
-
-        if count_number_of_inflections(time_series) > 2.0: 
-            continue
-        
-        time_series.plot(figsize=(15,15), label=str(emp_id))
-        
-        plt.legend()
 
 def plot_each_employee_as_timeseries(subject_cohort):
     
@@ -1005,15 +1016,18 @@ def plot_each_employee_as_timeseries(subject_cohort):
         time_series.index = pd.to_datetime(employee_level_cohort.approved_at)
         time_series.plot(figsize=(15,15),label=str(emp_id), alpha=0.3)
 
-def plot_rolling_avg(subject_cohort, data, func=get_median_filtered, label_str='median'):
-    
-    
-    mean_filtered_signal = transform_to_signal_list(subject_cohort.pct_savings.tolist(), func)
-    
-    
-    ts = pd.Series(mean_filtered_signal)
-    ts.index = pd.to_datetime(subject_cohort.approved_at)
-    ts.plot(figsize=(15,15), label=label_str, linewidth=5)
+    pass
+
+
+COLOR_PALETTE = [    
+   "#348ABD",
+   "#A60628",
+   "#7A68A6",
+   "#467821",
+   "#CF4457",
+   "#188487",
+   "#E24A33"
+  ]
 
 def plot_time_series_in_context_sequence(list_of_ordered_datapoints, title_str):
     '''
@@ -1035,15 +1049,8 @@ def plot_time_series_in_context_sequence(list_of_ordered_datapoints, title_str):
 
 
 
-def plot_time_series_in_context_sequence_lollipop(median_filtered_signal, title_str='Median Filtered Signal'):
-    plt.figure(figsize=(15, 10))
-    plt.subplot(2,1,1)
-    values = np.array(median_filtered_signal)
-    (markers, stemlines, baseline) = plt.stem(values, basefmt='r--', base)
-    useless_output = plt.setp(stemlines, linestyle="-", color="olive", linewidth=0.5, alpha=0.7)
-    plt.title(title_str)
 
-def plot_pricevsyear(X,y, model=None, title=None):
+def plot_pricevsyear(X, y, model=None, title=None):
     '''
     Calculate the residuals versus the model and sorts by largest negatives first
     INPUT  numpy array predicted (modeled) points and observed points

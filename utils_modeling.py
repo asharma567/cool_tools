@@ -241,7 +241,7 @@ def get_multi_label_roc_score(input_labels, X, instatiated_clf):
     return sum([weight*score for weight, score in output_list])
 
 def score_classifier(clf, feature_M, labels, class_imbalance=True):
-    
+    from sklearn.cross_validation import StratifiedKFold, cross_val_score    
     #scoring mechanism
     if class_imbalance:
         skf = StratifiedKFold(labels, n_folds=5, shuffle=True)
@@ -256,9 +256,12 @@ def score_classifier(clf, feature_M, labels, class_imbalance=True):
     )
     
     median = np.median(scores_for_each_fold)
+    mean = np.mean(scores_for_each_fold)
     std = np.std(scores_for_each_fold)
     
-    return median, std, scores_for_each_fold
+    return mean, median, std, scores_for_each_fold
+
+
 
 def feature_importance_wrapper(clf, feature_M, labels, class_imbalance=True):
     
