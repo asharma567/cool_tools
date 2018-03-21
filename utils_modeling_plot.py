@@ -37,6 +37,27 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+def value_counts_to_barplot(value_counts_series, pal=sns.color_palette("Greens_d", len(groupedvalues))):
+    import seaborn as sns
+
+    g = sns.barplot(
+        x = value_counts_series,
+        y = value_counts_series.index, 
+        palette = np.array(pal[::-1]),
+        
+    )
+
+    for i, val in enumerate(value_counts_series):
+        g.text(
+                x = value_counts_series[i],
+                y = i,
+                s = round(val, 2), 
+                color = 'blue', 
+                ha = "center",
+                fontsize=15
+            )
+    plt.show()
+
 def plot_distribution(data_points_list):
     '''
     kurtosis:
