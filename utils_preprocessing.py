@@ -254,3 +254,20 @@ def numpy_array_to_str(arr):
     #convert numpy array to list
     arr_list = list(arr)
     return '(' + str(arr_list).strip('[]').replace('\n','') + ')'
+
+
+def get_lat_lon(str_, stop_words=None):
+    geocode_result = []
+    gmaps = googlemaps.Client(key='AIzaSyCol8kK-GVXAIukXhICNXuaBIgqzENNp7I')
+    
+    try:
+
+        if stop_words:
+            str_ = ' '.join([word for word in str_.split() if word not in set(stop_words)])
+
+        geocode_result = gmaps.geocode(str_)
+
+        return geocode_result[0]['geometry']['location']
+    except:
+        print (geocode_result)
+        return None
