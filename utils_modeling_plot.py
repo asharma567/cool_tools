@@ -37,25 +37,27 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def value_counts_to_barplot(value_counts_series, pal=sns.color_palette("Greens_d", len(groupedvalues))):
+def value_counts_to_barplot(value_counts_series):
     import seaborn as sns
+    sns.set_style("whitegrid")
+    
 
     g = sns.barplot(
         x = value_counts_series,
-        y = value_counts_series.index, 
-        palette = np.array(pal[::-1]),
-        
+        y = value_counts_series.index
     )
 
-    for i, val in enumerate(value_counts_series):
+    for i, val in zip(value_counts_series.index, value_counts_series.values):
         g.text(
                 x = value_counts_series[i],
                 y = i,
                 s = round(val, 2), 
                 color = 'blue', 
-                ha = "center",
+                ha = "left",
                 fontsize=15
             )
+
+    plt.figure(figsize=(13,8))
     plt.show()
 
 def plot_distribution(data_points_list):
